@@ -85,20 +85,20 @@ resource "aws_autoscaling_group" "app_asg" {
     version = "$Latest"
   }
   tag {
-  key                 = "Name"
-  value               = "${local.name_prefix}-instance"
-  propagate_at_launch = true
- }
-
-dynamic "tag" {
-  for_each = local.tags
-
-  content {
-    key                 = tag.key
-    value               = tag.value
+    key                 = "Name"
+    value               = "${local.name_prefix}-instance"
     propagate_at_launch = true
   }
-}
+
+  dynamic "tag" {
+    for_each = local.tags
+
+    content {
+      key                 = tag.key
+      value               = tag.value
+      propagate_at_launch = true
+    }
+  }
 
 
 }

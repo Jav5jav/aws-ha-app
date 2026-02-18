@@ -8,15 +8,15 @@ variable "environment" {
 }
 
 variable "region" {
-  type    = string
+  type        = string
   description = "Name of the region"
-  default = "us-east-1"
+  default     = "us-east-1"
 }
 
 variable "project_name" {
-  type    = string
+  type        = string
   description = "Name of the project"
-  default = "ha-app"
+  default     = "ha-app"
 }
 
 variable "vpc_id" {
@@ -57,7 +57,7 @@ variable "ami_id" {
 }
 
 variable "instance_type" {
-  type = string
+  type        = string
   description = "Instance type of Ec2 machine, Must be t2.micro for dev environment"
   validation {
     condition     = var.environment != "dev" || var.instance_type == "t2.micro"
@@ -67,9 +67,9 @@ variable "instance_type" {
 }
 
 variable "app_port" {
-  type    = number
+  type        = number
   description = "application port number"
-  default = 8080
+  default     = 8080
 }
 
 variable "desired_capacity" {
