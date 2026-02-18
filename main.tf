@@ -1,183 +1,80 @@
-# ────────────────────────────────────────────────────────────────────────────────
-# Security Groups – using dynamic ingress/egress
-# ────────────────────────────────────────────────────────────────────────────────
-
-resource "aws_security_group" "alb" {
-  name        = "${var.name_prefix}-alb-sg"
-  vpc_id      = var.vpc_id
-
-  dynamic "ingress" {
-    for_each = var.alb_ingress_rules
-    content {
-      from_port   = ingress.value.from_port
-      to_port     = ingress.value.to_port
-      protocol    = ingress.value.protocol
-      cidr_blocks = ingress.value.cidr_blocks
-      description = lookup(ingress.value, "description", null)
-    }
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = merge(var.tags, { Name = "${var.name_prefix}-alb-sg" })
-}
-
-resource "aws_security_group" "instances" {
-  name        = "${var.name_prefix}-instances-sg"
-  vpc_id      = var.vpc_id
-
-  dynamic "ingress" {
-    for_each = concat(
-      var.instance_ingress_rules,
-      # Auto-add rule from ALB SG on app_port
-      [{
-        from_port       = var.app_port
-        to_port         = var.app_port
-        protocol        = "tcp"
-        security_groups = [aws_security_group.alb.id]
-        description     = "Allow traffic from ALB"
-      }]
-    )
-    content {
-      from_port       = ingress.value.from_port
-      to_port         = ingress.value.to_port
-      protocol        = ingress.value.protocol
-      security_groups = lookup(ingress.value, "security_groups", null)
-      cidr_blocks     = lookup(ingress.value, "cidr_blocks", null)
-      description     = lookup(ingress.value, "description", null)
-    }
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = merge(var.tags, { Name = "${var.name_prefix}-instances-sg" })
-}
-
-# ────────────────────────────────────────────────────────────────────────────────
-# ALB
-# ────────────────────────────────────────────────────────────────────────────────
-
-resource "aws_lb" "this" {
-  name               = "${var.name_prefix}-alb"
-  internal           = false
+resource "aws_lb" "app_alb" {
+  name               = "${local.name_prefix}-alb"
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb.id]
+  internal           = false
+  security_groups    = [aws_security_group.alb_sg.id]
   subnets            = var.public_subnet_ids
-
-  tags = merge(var.tags, { Name = "${var.name_prefix}-alb" })
+  tags               = local.common_tags
 }
 
-resource "aws_lb_target_group" "this" {
-  name        = "${var.name_prefix}-tg"
-  port        = var.app_port
-  protocol    = "HTTP"
-  vpc_id      = var.vpc_id
-  target_type = "instance"
+resource "aws_lb_target_group" "app_tg" {
+  name     = "${local.name_prefix}-tg"
+  port     = var.app_port
+  protocol = "HTTP"
+  vpc_id   = var.vpc_id
 
   health_check {
+    enabled             = true
     path                = "/"
-    protocol            = "HTTP"
-    matcher             = "200-399"
-    interval            = 30
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
     timeout             = 5
-    healthy_threshold   = 3
-    unhealthy_threshold = 3
+    interval            = 30
+    matcher             = "200-399"
   }
 
-  tags = merge(var.tags, { Name = "${var.name_prefix}-tg" })
+  tags = local.common_tags
 }
 
 resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.this.arn
+  load_balancer_arn = aws_lb.app_alb.arn
   port              = 80
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.this.arn
+    target_group_arn = aws_lb_target_group.app_tg.arn
   }
 }
 
-# ────────────────────────────────────────────────────────────────────────────────
-# Launch Template – minimal, no user_data
-# ────────────────────────────────────────────────────────────────────────────────
-
-resource "aws_launch_template" "this" {
-  name_prefix   = "${var.name_prefix}-"
+resource "aws_launch_template" "app_template" {
+  name_prefix   = "${local.name_prefix}-lt"
   image_id      = var.ami_id
   instance_type = var.instance_type
 
-  network_interfaces {
-    associate_public_ip_address = false
-    security_groups             = [aws_security_group.instances.id]
+  vpc_security_group_ids = [aws_security_group.app_sg.id]
+
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required" 
   }
 
-  block_device_mappings {
-    device_name = "/dev/sda1"
-    ebs {
-      volume_size = 10
-      volume_type = "gp3"
-    }
-  }
+  user_data = base64encode(templatefile("${path.module}/user_data.sh.tftpl", {
+    enable_observability = var.enable_observability
+    log_group_name       = local.log_group_name
+  })
+)
 
   tag_specifications {
     resource_type = "instance"
-
-    dynamic "tags" {
-      for_each = merge(var.tags, { Name = "${var.name_prefix}-instance" })
-      content {
-        key   = tags.key
-        value = tags.value
-      }
-    }
+    tags          = local.common_tags
   }
 
-  lifecycle {
-    create_before_destroy = true
-  }
+  tags = local.common_tags
 }
 
-# ────────────────────────────────────────────────────────────────────────────────
-# Auto Scaling Group – dynamic tags
-# ────────────────────────────────────────────────────────────────────────────────
-
-resource "aws_autoscaling_group" "this" {
-  name                = "${var.name_prefix}-asg"
-  max_size            = var.max_size
-  min_size            = var.min_size
+resource "aws_autoscaling_group" "app_asg" {
+  name                = "${local.name_prefix}-asg"
   desired_capacity    = var.desired_capacity
+  min_size            = var.min_size
+  max_size            = var.max_size
   vpc_zone_identifier = var.private_subnet_ids
+  target_group_arns   = [aws_lb_target_group.app_tg.arn]
+  health_check_type   = "ELB"
 
   launch_template {
-    id      = aws_launch_template.this.id
+    id      = aws_launch_template.app_template.id
     version = "$Latest"
   }
 
-  target_group_arns = [aws_lb_target_group.this.arn]
-
-  dynamic "tag" {
-    for_each = merge(
-      var.tags,
-      { Name = "${var.name_prefix}-asg" }
-    )
-    content {
-      key                 = tag.key
-      value               = tag.value
-      propagate_at_launch = true
-    }
-  }
-
-  lifecycle {
-    ignore_changes = [desired_capacity]
-  }
 }

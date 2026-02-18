@@ -1,28 +1,13 @@
 locals {
-  # --------
-  # Identity
-  # --------
-  project     = var.project
-  environment = var.environment
-  region      = var.aws_region
+  # Predictable, env-aware naming name_prefix
+  name_prefix = "${var.project_name}-${var.environment}-${var.region}"
 
-  # Predictable, env-aware naming prefix
-  prefix = "${local.project}-${local.environment}-${local.region}"
 
-  # ------------
-  # Common tags
-  # ------------
   common_tags = {
-    Project     = local.project
-    Environment = local.environment
-    ManagedBy   = "terraform"
+    project     = var.project_name
+    environment = var.environment
   }
-
-  # -----------------------
-  # User data (separate file)
-  # -----------------------
-  user_data = templatefile("${path.module}/user_data.sh.tpl", {
-    environment    = local.environment
-    log_group_name = var.log_group_name
-  })
+  
+  log_retention_days = coalesce(var.log_retention_days, var.environment == "prod" ? 30 : 7)
+  log_group_name = "${local.name_prefix}-log_group"
 }
