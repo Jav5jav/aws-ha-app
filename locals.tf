@@ -7,7 +7,7 @@ locals {
     project     = var.project_name
     environment = var.environment
   }
-  
+
   log_retention_days = coalesce(var.log_retention_days, var.environment == "prod" ? 30 : 7)
-  log_group_name = "${local.name_prefix}-log_group"
+  log_group_name     = "${local.name_prefix}-log_group"
 }

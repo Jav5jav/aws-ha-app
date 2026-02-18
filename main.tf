@@ -46,14 +46,22 @@ resource "aws_launch_template" "app_template" {
 
   metadata_options {
     http_endpoint = "enabled"
-    http_tokens   = "required" 
+    http_tokens   = "required"
   }
 
   user_data = base64encode(templatefile("${path.module}/user_data.sh.tftpl", {
     enable_observability = var.enable_observability
     log_group_name       = local.log_group_name
-  })
-)
+    })
+  )
+
+  dynamic "iam_instance_profile" {
+    for_each = var.enable_observability ? [1] : []
+    content {
+      name = aws_iam_instance_profile.ec2[0].name
+    }
+  }
+
 
   tag_specifications {
     resource_type = "instance"

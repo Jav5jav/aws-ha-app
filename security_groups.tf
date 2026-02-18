@@ -14,21 +14,21 @@ resource "aws_security_group" "alb_sg" {
   }
 
   egress {
-    description     = "To app ec2 instances"
-    from_port       = 0
-    to_port         = 0
-    protocol        = -1
+    description = "To app ec2 instances"
+    from_port   = 0
+    to_port     = 0
+    protocol    = -1
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags        = local.common_tags
+  tags = local.common_tags
 }
 
 resource "aws_security_group" "app_sg" {
   name        = "${local.name_prefix}-instances-sg"
   description = "Instances only accept traffic from ALB"
   vpc_id      = var.vpc_id
- 
+
 
   ingress {
     description     = "App traffic from ALB only"
@@ -45,5 +45,5 @@ resource "aws_security_group" "app_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-   tags        = local.common_tags
+  tags = local.common_tags
 }

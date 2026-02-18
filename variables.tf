@@ -2,18 +2,18 @@ variable "environment" {
   description = "Deployment environment"
   type        = string
   validation {
-  condition     = contains(["dev","prod"], var.environment)
-  error_message = "environment must be dev & prod."
+    condition     = contains(["dev", "prod"], var.environment)
+    error_message = "environment must be dev & prod."
   }
 }
 
 variable "region" {
-  type = string
+  type    = string
   default = "us-east-1"
 }
 
 variable "project_name" {
-  type = string
+  type    = string
   default = "ha-app"
 }
 
@@ -34,7 +34,7 @@ variable "public_subnet_ids" {
     condition     = length(var.public_subnet_ids) >= 2
     error_message = "public_subnet_ids must have at least 2 subnets (multi-AZ)."
   }
-  default = ["subnet-12345","subnet-67890"]
+  default = ["subnet-12345", "subnet-67890"]
 }
 
 variable "private_subnet_ids" {
@@ -45,7 +45,7 @@ variable "private_subnet_ids" {
     condition     = length(var.private_subnet_ids) >= 2
     error_message = "private_subnet_ids must have at least 2 subnets (multi-AZ)."
   }
-  default = ["subnet-12345","subnet-67890"]
+  default = ["subnet-12345", "subnet-67890"]
 }
 
 variable "ami_id" {
@@ -59,42 +59,42 @@ variable "ami_id" {
 }
 
 variable "instance_type" {
-  type        = string
+  type = string
   validation {
-  condition     = var.environment != "dev" || var.instance_type == "t2.micro"
-  error_message = "In dev environment, instance_type must be t2.micro."
+    condition     = var.environment != "dev" || var.instance_type == "t2.micro"
+    error_message = "In dev environment, instance_type must be t2.micro."
   }
-  default     = "t2.micro"
+  default = "t2.micro"
 }
 
 variable "app_port" {
-  type        = number
-  default     = 8080
+  type    = number
+  default = 8080
 }
 
-variable "desired_capacity" { 
-    type = number
-    default = 2 
+variable "desired_capacity" {
+  type    = number
+  default = 2
 }
 variable "min_size" {
-  type = number
-  default = 1 
-  }
+  type    = number
+  default = 1
+}
 
 variable "max_size" {
-  type = number
-  default = 4 
-  }
+  type    = number
+  default = 4
+}
 
 variable "allowed_ingress_cidrs" {
   type        = list(string)
   description = "CIDRs to reach ALB."
-  default     = ["70.30.110.37/32"] 
+  default     = ["70.30.110.37/32"]
 }
 
 variable "tags" {
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
 }
 
 variable "enable_observability" {
