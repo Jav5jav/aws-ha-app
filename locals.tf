@@ -8,6 +8,8 @@ locals {
     environment = var.environment
   }
 
+  tags = merge(local.common_tags, var.tags)
+
   log_retention_days = coalesce(var.log_retention_days, var.environment == "prod" ? 30 : 7)
   log_group_name     = "${local.name_prefix}-log_group"
 }

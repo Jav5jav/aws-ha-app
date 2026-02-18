@@ -4,7 +4,7 @@ resource "aws_lb" "app_alb" {
   internal           = false
   security_groups    = [aws_security_group.alb_sg.id]
   subnets            = var.public_subnet_ids
-  tags               = local.common_tags
+  tags               = local.tags
 }
 
 resource "aws_lb_target_group" "app_tg" {
@@ -23,7 +23,7 @@ resource "aws_lb_target_group" "app_tg" {
     matcher             = "200-399"
   }
 
-  tags = local.common_tags
+  tags = local.tags
 }
 
 resource "aws_lb_listener" "http" {
@@ -68,7 +68,7 @@ resource "aws_launch_template" "app_template" {
     tags          = local.common_tags
   }
 
-  tags = local.common_tags
+  tags = local.tags
 }
 
 resource "aws_autoscaling_group" "app_asg" {
@@ -84,5 +84,21 @@ resource "aws_autoscaling_group" "app_asg" {
     id      = aws_launch_template.app_template.id
     version = "$Latest"
   }
+  tag {
+  key                 = "Name"
+  value               = "${local.name_prefix}-instance"
+  propagate_at_launch = true
+ }
+
+dynamic "tag" {
+  for_each = local.tags
+
+  content {
+    key                 = tag.key
+    value               = tag.value
+    propagate_at_launch = true
+  }
+}
+
 
 }
