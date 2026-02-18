@@ -1,0 +1,468 @@
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # module.aws_ha_app.aws_autoscaling_group.app_asg will be created
+  + resource "aws_autoscaling_group" "app_asg" {
+      + arn                              = (known after apply)
+      + availability_zones               = (known after apply)
+      + default_cooldown                 = (known after apply)
+      + desired_capacity                 = 2
+      + force_delete                     = false
+      + force_delete_warm_pool           = false
+      + health_check_grace_period        = 300
+      + health_check_type                = "ELB"
+      + id                               = (known after apply)
+      + ignore_failed_scaling_activities = false
+      + load_balancers                   = (known after apply)
+      + max_size                         = 4
+      + metrics_granularity              = "1Minute"
+      + min_size                         = 1
+      + name                             = "ha-app-dev-us-east-1-asg"
+      + name_prefix                      = (known after apply)
+      + predicted_capacity               = (known after apply)
+      + protect_from_scale_in            = false
+      + region                           = "us-east-1"
+      + service_linked_role_arn          = (known after apply)
+      + target_group_arns                = (known after apply)
+      + vpc_zone_identifier              = [
+          + "subnet-cccc3333",
+          + "subnet-dddd4444",
+        ]
+      + wait_for_capacity_timeout        = "10m"
+      + warm_pool_size                   = (known after apply)
+
+      + availability_zone_distribution (known after apply)
+
+      + capacity_reservation_specification (known after apply)
+
+      + launch_template {
+          + id      = (known after apply)
+          + name    = (known after apply)
+          + version = "$Latest"
+        }
+
+      + mixed_instances_policy (known after apply)
+
+      + tag {
+          + key                 = "Cost"
+          + propagate_at_launch = true
+          + value               = "sandbox"
+        }
+      + tag {
+          + key                 = "Name"
+          + propagate_at_launch = true
+          + value               = "ha-app-dev-us-east-1-instance"
+        }
+      + tag {
+          + key                 = "Owner"
+          + propagate_at_launch = true
+          + value               = "platform"
+        }
+      + tag {
+          + key                 = "environment"
+          + propagate_at_launch = true
+          + value               = "dev"
+        }
+      + tag {
+          + key                 = "project"
+          + propagate_at_launch = true
+          + value               = "ha-app"
+        }
+
+      + traffic_source (known after apply)
+    }
+
+  # module.aws_ha_app.aws_cloudwatch_log_group.bootstrap[0] will be created
+  + resource "aws_cloudwatch_log_group" "bootstrap" {
+      + arn                         = (known after apply)
+      + deletion_protection_enabled = (known after apply)
+      + id                          = (known after apply)
+      + log_group_class             = (known after apply)
+      + name                        = "ha-app-dev-us-east-1-log_group"
+      + name_prefix                 = (known after apply)
+      + region                      = "us-east-1"
+      + retention_in_days           = 7
+      + skip_destroy                = false
+      + tags                        = {
+          + "environment" = "dev"
+          + "project"     = "ha-app"
+        }
+      + tags_all                    = {
+          + "environment" = "dev"
+          + "project"     = "ha-app"
+        }
+    }
+
+  # module.aws_ha_app.aws_iam_instance_profile.ec2[0] will be created
+  + resource "aws_iam_instance_profile" "ec2" {
+      + arn         = (known after apply)
+      + create_date = (known after apply)
+      + id          = (known after apply)
+      + name        = "ha-app-dev-us-east-1-instance-profile"
+      + name_prefix = (known after apply)
+      + path        = "/"
+      + role        = "ha-app-dev-us-east-1-ec2-role"
+      + tags_all    = (known after apply)
+      + unique_id   = (known after apply)
+    }
+
+  # module.aws_ha_app.aws_iam_role.ec2[0] will be created
+  + resource "aws_iam_role" "ec2" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "ec2.amazonaws.com"
+                        }
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "ha-app-dev-us-east-1-ec2-role"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags                  = {
+          + "environment" = "dev"
+          + "project"     = "ha-app"
+        }
+      + tags_all              = {
+          + "environment" = "dev"
+          + "project"     = "ha-app"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # module.aws_ha_app.aws_iam_role_policy_attachment.cw_agent[0] will be created
+  + resource "aws_iam_role_policy_attachment" "cw_agent" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+      + role       = "ha-app-dev-us-east-1-ec2-role"
+    }
+
+  # module.aws_ha_app.aws_launch_template.app_template will be created
+  + resource "aws_launch_template" "app_template" {
+      + arn                    = (known after apply)
+      + default_version        = (known after apply)
+      + id                     = (known after apply)
+      + image_id               = "ami-0abc1234def567890"
+      + instance_type          = "t2.micro"
+      + latest_version         = (known after apply)
+      + name                   = (known after apply)
+      + name_prefix            = "ha-app-dev-us-east-1-lt"
+      + region                 = "us-east-1"
+      + tags                   = {
+          + "Cost"        = "sandbox"
+          + "Owner"       = "platform"
+          + "environment" = "dev"
+          + "project"     = "ha-app"
+        }
+      + tags_all               = {
+          + "Cost"        = "sandbox"
+          + "Owner"       = "platform"
+          + "environment" = "dev"
+          + "project"     = "ha-app"
+        }
+      + user_data              = "IyEvYmluL2Jhc2gKc2V0IC1ldW8gcGlwZWZhaWwKCmVjaG8gImJvb3RzdHJhcCBzdGFydGVkIiA+PiAvdmFyL2xvZy9jbG91ZC1pbml0LW91dHB1dC5sb2cKCgp5dW0gaW5zdGFsbCAteSBhbWF6b24tY2xvdWR3YXRjaC1hZ2VudAoKY2F0ID4vb3B0L2F3cy9hbWF6b24tY2xvdWR3YXRjaC1hZ2VudC9iaW4vY29uZmlnLmpzb24gPDxDT05GSUcKewogICJsb2dzIjogewogICAgImxvZ3NfY29sbGVjdGVkIjogewogICAgICAiZmlsZXMiOiB7CiAgICAgICAgImNvbGxlY3RfbGlzdCI6IFsKICAgICAgICAgIHsKICAgICAgICAgICAgImZpbGVfcGF0aCI6ICIvdmFyL2xvZy9jbG91ZC1pbml0LW91dHB1dC5sb2ciLAogICAgICAgICAgICAibG9nX2dyb3VwX25hbWUiOiAiaGEtYXBwLWRldi11cy1lYXN0LTEtbG9nX2dyb3VwIiwKICAgICAgICAgICAgImxvZ19zdHJlYW1fbmFtZSI6ICJ7aW5zdGFuY2VfaWR9IgogICAgICAgICAgfQogICAgICAgIF0KICAgICAgfQogICAgfQogIH0KfQpDT05GSUcKCi9vcHQvYXdzL2FtYXpvbi1jbG91ZHdhdGNoLWFnZW50L2Jpbi9hbWF6b24tY2xvdWR3YXRjaC1hZ2VudC1jdGwgXAotYSBmZXRjaC1jb25maWcgXAotbSBlYzIgXAotYyBmaWxlOi9vcHQvYXdzL2FtYXpvbi1jbG91ZHdhdGNoLWFnZW50L2Jpbi9jb25maWcuanNvbiBcCi1zCgoKZWNobyAiYm9vdHN0cmFwIGZpbmlzaGVkIiA+PiAvdmFyL2xvZy9jbG91ZC1pbml0LW91dHB1dC5sb2cKCg=="
+      + vpc_security_group_ids = (known after apply)
+
+      + iam_instance_profile {
+          + name = "ha-app-dev-us-east-1-instance-profile"
+        }
+
+      + metadata_options {
+          + http_endpoint               = "enabled"
+          + http_protocol_ipv6          = (known after apply)
+          + http_put_response_hop_limit = (known after apply)
+          + http_tokens                 = "required"
+          + instance_metadata_tags      = (known after apply)
+        }
+
+      + tag_specifications {
+          + resource_type = "instance"
+          + tags          = {
+              + "environment" = "dev"
+              + "project"     = "ha-app"
+            }
+        }
+    }
+
+  # module.aws_ha_app.aws_lb.app_alb will be created
+  + resource "aws_lb" "app_alb" {
+      + arn                                                          = (known after apply)
+      + arn_suffix                                                   = (known after apply)
+      + client_keep_alive                                            = 3600
+      + desync_mitigation_mode                                       = "defensive"
+      + dns_name                                                     = (known after apply)
+      + drop_invalid_header_fields                                   = false
+      + enable_deletion_protection                                   = false
+      + enable_http2                                                 = true
+      + enable_tls_version_and_cipher_suite_headers                  = false
+      + enable_waf_fail_open                                         = false
+      + enable_xff_client_port                                       = false
+      + enable_zonal_shift                                           = false
+      + enforce_security_group_inbound_rules_on_private_link_traffic = (known after apply)
+      + id                                                           = (known after apply)
+      + idle_timeout                                                 = 60
+      + internal                                                     = false
+      + ip_address_type                                              = (known after apply)
+      + load_balancer_type                                           = "application"
+      + name                                                         = "ha-app-dev-us-east-1-alb"
+      + name_prefix                                                  = (known after apply)
+      + preserve_host_header                                         = false
+      + region                                                       = "us-east-1"
+      + secondary_ips_auto_assigned_per_subnet                       = (known after apply)
+      + security_groups                                              = (known after apply)
+      + subnets                                                      = [
+          + "subnet-aaaa1111",
+          + "subnet-bbbb2222",
+        ]
+      + tags                                                         = {
+          + "Cost"        = "sandbox"
+          + "Owner"       = "platform"
+          + "environment" = "dev"
+          + "project"     = "ha-app"
+        }
+      + tags_all                                                     = {
+          + "Cost"        = "sandbox"
+          + "Owner"       = "platform"
+          + "environment" = "dev"
+          + "project"     = "ha-app"
+        }
+      + vpc_id                                                       = (known after apply)
+      + xff_header_processing_mode                                   = "append"
+      + zone_id                                                      = (known after apply)
+
+      + subnet_mapping (known after apply)
+    }
+
+  # module.aws_ha_app.aws_lb_listener.http will be created
+  + resource "aws_lb_listener" "http" {
+      + arn                                                                   = (known after apply)
+      + id                                                                    = (known after apply)
+      + load_balancer_arn                                                     = (known after apply)
+      + port                                                                  = 80
+      + protocol                                                              = "HTTP"
+      + region                                                                = "us-east-1"
+      + routing_http_request_x_amzn_mtls_clientcert_header_name               = (known after apply)
+      + routing_http_request_x_amzn_mtls_clientcert_issuer_header_name        = (known after apply)
+      + routing_http_request_x_amzn_mtls_clientcert_leaf_header_name          = (known after apply)
+      + routing_http_request_x_amzn_mtls_clientcert_serial_number_header_name = (known after apply)
+      + routing_http_request_x_amzn_mtls_clientcert_subject_header_name       = (known after apply)
+      + routing_http_request_x_amzn_mtls_clientcert_validity_header_name      = (known after apply)
+      + routing_http_request_x_amzn_tls_cipher_suite_header_name              = (known after apply)
+      + routing_http_request_x_amzn_tls_version_header_name                   = (known after apply)
+      + routing_http_response_access_control_allow_credentials_header_value   = (known after apply)
+      + routing_http_response_access_control_allow_headers_header_value       = (known after apply)
+      + routing_http_response_access_control_allow_methods_header_value       = (known after apply)
+      + routing_http_response_access_control_allow_origin_header_value        = (known after apply)
+      + routing_http_response_access_control_expose_headers_header_value      = (known after apply)
+      + routing_http_response_access_control_max_age_header_value             = (known after apply)
+      + routing_http_response_content_security_policy_header_value            = (known after apply)
+      + routing_http_response_server_enabled                                  = (known after apply)
+      + routing_http_response_strict_transport_security_header_value          = (known after apply)
+      + routing_http_response_x_content_type_options_header_value             = (known after apply)
+      + routing_http_response_x_frame_options_header_value                    = (known after apply)
+      + ssl_policy                                                            = (known after apply)
+      + tags_all                                                              = (known after apply)
+      + tcp_idle_timeout_seconds                                              = (known after apply)
+
+      + default_action {
+          + order            = (known after apply)
+          + target_group_arn = (known after apply)
+          + type             = "forward"
+        }
+
+      + mutual_authentication (known after apply)
+    }
+
+  # module.aws_ha_app.aws_lb_target_group.app_tg will be created
+  + resource "aws_lb_target_group" "app_tg" {
+      + arn                                = (known after apply)
+      + arn_suffix                         = (known after apply)
+      + connection_termination             = (known after apply)
+      + deregistration_delay               = "300"
+      + id                                 = (known after apply)
+      + ip_address_type                    = (known after apply)
+      + lambda_multi_value_headers_enabled = false
+      + load_balancer_arns                 = (known after apply)
+      + load_balancing_algorithm_type      = (known after apply)
+      + load_balancing_anomaly_mitigation  = (known after apply)
+      + load_balancing_cross_zone_enabled  = (known after apply)
+      + name                               = "ha-app-dev-us-east-1-tg"
+      + name_prefix                        = (known after apply)
+      + port                               = 8080
+      + preserve_client_ip                 = (known after apply)
+      + protocol                           = "HTTP"
+      + protocol_version                   = (known after apply)
+      + proxy_protocol_v2                  = false
+      + region                             = "us-east-1"
+      + slow_start                         = 0
+      + tags                               = {
+          + "Cost"        = "sandbox"
+          + "Owner"       = "platform"
+          + "environment" = "dev"
+          + "project"     = "ha-app"
+        }
+      + tags_all                           = {
+          + "Cost"        = "sandbox"
+          + "Owner"       = "platform"
+          + "environment" = "dev"
+          + "project"     = "ha-app"
+        }
+      + target_type                        = "instance"
+      + vpc_id                             = "vpc-0123456789abcdef0"
+
+      + health_check {
+          + enabled             = true
+          + healthy_threshold   = 2
+          + interval            = 30
+          + matcher             = "200-399"
+          + path                = "/"
+          + port                = "traffic-port"
+          + protocol            = "HTTP"
+          + timeout             = 5
+          + unhealthy_threshold = 2
+        }
+
+      + stickiness (known after apply)
+
+      + target_failover (known after apply)
+
+      + target_group_health (known after apply)
+
+      + target_health_state (known after apply)
+    }
+
+  # module.aws_ha_app.aws_security_group.alb_sg will be created
+  + resource "aws_security_group" "alb_sg" {
+      + arn                    = (known after apply)
+      + description            = "ALB ingress"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = "To app ec2 instances"
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 0
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = [
+                  + "203.0.113.10/32",
+                ]
+              + description      = "HTTP"
+              + from_port        = 80
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 80
+            },
+        ]
+      + name                   = "ha-app-dev-us-east-1-alb-sg"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + region                 = "us-east-1"
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "environment" = "dev"
+          + "project"     = "ha-app"
+        }
+      + tags_all               = {
+          + "environment" = "dev"
+          + "project"     = "ha-app"
+        }
+      + vpc_id                 = "vpc-0123456789abcdef0"
+    }
+
+  # module.aws_ha_app.aws_security_group.app_sg will be created
+  + resource "aws_security_group" "app_sg" {
+      + arn                    = (known after apply)
+      + description            = "Instances only accept traffic from ALB"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = "Outbound (tighten in prod via VPC endpoints/NAT controls)"
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 0
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = []
+              + description      = "App traffic from ALB only"
+              + from_port        = 8080
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = (known after apply)
+              + self             = false
+              + to_port          = 8080
+            },
+        ]
+      + name                   = "ha-app-dev-us-east-1-instances-sg"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + region                 = "us-east-1"
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "environment" = "dev"
+          + "project"     = "ha-app"
+        }
+      + tags_all               = {
+          + "environment" = "dev"
+          + "project"     = "ha-app"
+        }
+      + vpc_id                 = "vpc-0123456789abcdef0"
+    }
+
+Plan: 11 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + alb_dns_name          = (known after apply)
+  + alb_security_group_id = (known after apply)
+  + app_security_group_id = (known after apply)
+  + app_url               = (known after apply)
+  + asg_name              = "ha-app-dev-us-east-1-asg"
+  + instance_profile_name = "ha-app-dev-us-east-1-instance-profile"
+  + launch_template_id    = (known after apply)
+  + log_group_name        = "ha-app-dev-us-east-1-log_group"
+  + target_group_arn      = (known after apply)
+
+─────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't
+guarantee to take exactly these actions if you run "terraform apply" now.
