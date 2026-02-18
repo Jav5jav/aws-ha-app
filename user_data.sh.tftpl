@@ -1,0 +1,37 @@
+#!/bin/bash
+set -euo pipefail
+
+echo "bootstrap started" >> /var/log/cloud-init-output.log
+
+%{ if enable_observability ~}
+
+yum install -y amazon-cloudwatch-agent
+
+cat >/opt/aws/amazon-cloudwatch-agent/bin/config.json <<CONFIG
+{
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/var/log/cloud-init-output.log",
+            "log_group_name": "${log_group_name}",
+            "log_stream_name": "{instance_id}"
+          }
+        ]
+      }
+    }
+  }
+}
+CONFIG
+
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+-a fetch-config \
+-m ec2 \
+-c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json \
+-s
+
+%{ endif ~}
+
+echo "bootstrap finished" >> /var/log/cloud-init-output.log
+
