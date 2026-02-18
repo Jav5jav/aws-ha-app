@@ -1,4 +1,4 @@
-# aws-ha-app (feature-app) — HA ALB + ASG (Ephemeral EC2) Terraform Module
+# aws-ha-app — HA ALB + ASG (Ephemeral EC2) Terraform Module
 
 This module provisions a **highly-available** web entrypoint using a **public Application Load Balancer** in **public subnets** and an **Auto Scaling Group** of **ephemeral EC2 instances** in **private subnets**. Instances are intended to be disposable/stateless.
 
