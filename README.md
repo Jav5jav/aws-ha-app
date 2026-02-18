@@ -19,6 +19,13 @@ This module provisions a **highly-available** web entrypoint using a **public Ap
 - ALB subnets are **public**, ASG subnets are **private**
 - Instances are **ephemeral/stateless** (no additional data volumes)
 - HTTP-only (no ACM/HTTPS/WAF in scope)
+- 
+## Requirements
+
+| Name | Version |
+|------|--------|
+| Terraform | >= 1.5 |
+| AWS Provider | >= 5.0 |
 
 ## Usage
 
